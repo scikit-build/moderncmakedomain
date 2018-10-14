@@ -93,5 +93,5 @@ document custom extensions provided by your CMake libraries.
 | `:prop_inst:`  | For installed file properties                      |
 | `:prop_cache:` | For cache properties                               |
 
+[sphinxcontrib-cmakedomain]: https://github.com/sphinx-contrib/cmakedomain
 [Kitware]: https://gitlab.kitware.com/
-
