@@ -12,12 +12,12 @@ BSD-3-Clause license.
 I will do my best to keep this module in sync with the one that Kitware uses
 themselves.
 
-:rotating_light::rotating_light::rotating_light:
+🚨🚨🚨
 Any issues you run into with this plugin must be reported to [Kitware]
-:rotating_light::rotating_light::rotating_light:
+🚨🚨🚨
 
-*I will* :no_entry:**not**:no_entry: _make any effort to modify the module,
-**only**_ :package:*packaging*:package: *improvements.*
+*I will* ⛔**not**⛔ _make any effort to modify the module, **only**_
+📦*packaging*📦 *improvements.*
 
 # Installation
 
