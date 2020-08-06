@@ -68,7 +68,7 @@ To declare any of the references found below, they must be placed into a
 directory with the same name under the sphinx SOURCEDIR/master doc. Thus,
 `prop_tgt/MY_PERSONAL_PROPERTY.rst` can be referred to with
 ``:prop_tgt:`MY_PERSONAL_PROPERTY` ``. This is currently the *only* way CMake
-permits declaring new properties. 
+permits declaring new properties.
 
 ## References
 
@@ -82,6 +82,7 @@ document custom extensions provided by your CMake libraries.
 | `:envvar:`     | Refers to an environment variable                  |
 | `:cpack_gen:`  | Refers to CPack generators                         |
 | `:generator:`  | Refers to a build file generator                   |
+| `:guide:`      | Used to refer to a "guide" page                    |
 | `:manual:`     | Used to refer to a "manual" page (like `cmake(1)`) |
 | `:policy:`     | Refers to CMake Policies                           |
 | `:module:`     | Refers to CMake Modules                            |
