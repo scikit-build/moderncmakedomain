@@ -9,15 +9,9 @@ so some time might be needed to study their approach to these problems.
 This repository is under the same License as all of CMake, which is the
 BSD-3-Clause license.
 
-I will do my best to keep this module in sync with the one that Kitware uses
-themselves.
-
 🚨🚨🚨
 Any issues you run into with this plugin must be reported to [Kitware]
 🚨🚨🚨
-
-*I will* ⛔**not**⛔ _make any effort to modify the module, **only**_
-📦*packaging*📦 *improvements.*
 
 # Installation
 
@@ -93,6 +87,22 @@ document custom extensions provided by your CMake libraries.
 | `:prop_dir:`   | For directory properties                           |
 | `:prop_inst:`  | For installed file properties                      |
 | `:prop_cache:` | For cache properties                               |
+
+# History
+
+`sphinx-moderncmakedomain` was initially developed in October 2018 by
+[slurps-mad-rips][slurps-mad-rips] to  help write CMake documentation by simply
+publishing a python package of the same. This was a critical step to  ease the
+maintenance of sphinx-based documentation and avoid systematically copying the
+associated python  module maintained within the CMake repository.
+
+Later in early August 2021, [henryiii][henryiii] discovered the
+`sphinx-moderncmakedomain` project  while working on scikit-build issue
+[#574][skbuild-issue-574] intended to simplify its documentation generation
+infrastructure and avoid updating its own copy of the sphinx extension.
+[henryiii][henryiii] and [jcfr][jcfr] then worked with
+[slurps-mad-rips][slurps-mad-rips] to establish a transition plan to
+collaboratively maintain the project within the scikit-build organization.
 
 [sphinxcontrib-cmakedomain]: https://github.com/sphinx-contrib/cmakedomain
 [Kitware]: https://gitlab.kitware.com/
