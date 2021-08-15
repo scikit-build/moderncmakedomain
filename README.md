@@ -106,3 +106,8 @@ collaboratively maintain the project within the scikit-build organization.
 
 [sphinxcontrib-cmakedomain]: https://github.com/sphinx-contrib/cmakedomain
 [Kitware]: https://gitlab.kitware.com/
+
+[skbuild-issue-574]: https://github.com/scikit-build/scikit-build/pull/574
+[slurps-mad-rips]: https://github.com/slurps-mad-rips
+[henryiii]: https://github.com/henryiii
+[jcfr]: https://github.com/jcfr
