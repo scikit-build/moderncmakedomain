@@ -25,15 +25,15 @@ $ pip install sphinxcontrib-moderncmakedomain
 
 Alternatively, place it inside of your `setup.py`, `pyproject.toml`,
 `requirements.txt` or whatever system it is that you use to declare and manage
-your dependencies. The version available will be in the same *major* version as
-the latest CMake release.
+your dependencies. A new version will only be released if there is a
+change to this extension inside CMake.
 
 ## Git
 
 This module is installable via `pip` and GitHub directly as well
 
 ```
-$ pip install git+https://github.com/slurps-mad-rips/moderncmakedomain.git
+$ pip install git+https://github.com/scikit-build/moderncmakedomain.git
 ```
 
 # Usage
