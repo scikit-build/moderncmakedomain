@@ -20,7 +20,7 @@ from pygments.lexer import bygroups
 # - [\.\+-] are needed for string constants like gtk+-2.0
 # - Unix paths are recognized by '/'; support for Windows paths may be added if needed
 # - (\\.) allows for \-escapes (used in manual/cmake-language.7)
-# - $<..$<..$>..> nested occurence in cmake-buildsystem
+# - $<..$<..$>..> nested occurrence in cmake-buildsystem
 # - Nested variable evaluations are only supported in a limited capacity. Only
 #   one level of nesting is supported and at most one nested variable can be present.
 
@@ -191,6 +191,7 @@ _cmake_index_objs = {
     'cpack_gen':  _cmake_index_entry('cpack generator'),
     'envvar':     _cmake_index_entry('envvar'),
     'generator':  _cmake_index_entry('generator'),
+    'genex':      _cmake_index_entry('genex'),
     'guide':      _cmake_index_entry('guide'),
     'manual':     _cmake_index_entry('manual'),
     'module':     _cmake_index_entry('module'),
@@ -224,7 +225,7 @@ class CMakeTransform(Transform):
         self.titles = {}
 
     def parse_title(self, docname):
-        """Parse a document title as the first line starting in [A-Za-z0-9<]
+        """Parse a document title as the first line starting in [A-Za-z0-9<$]
            or fall back to the document basename if no such line exists.
            The cmake --help-*-list commands also depend on this convention.
            Return the title or False if the document file does not exist.
@@ -239,7 +240,7 @@ class CMakeTransform(Transform):
                 title = False
             else:
                 for line in f:
-                    if len(line) > 0 and (line[0].isalnum() or line[0] == '<'):
+                    if len(line) > 0 and (line[0].isalnum() or line[0] == '<' or line[0] == '$'):
                         title = line.rstrip()
                         break
                 f.close()
@@ -259,7 +260,13 @@ class CMakeTransform(Transform):
             # Insert the object link target.
             if objtype == 'command':
                 targetname = title.lower()
+            elif objtype == 'guide' and not tail.endswith('/index'):
+                targetname = tail
             else:
+                if objtype == 'genex':
+                    m = CMakeXRefRole._re_genex.match(title)
+                    if m:
+                        title = m.group(1)
                 targetname = title
             targetid = '%s:%s' % (objtype, targetname)
             targetnode = nodes.target('', '', ids=[targetid])
@@ -277,6 +284,10 @@ class CMakeObject(ObjectDescription):
     def handle_signature(self, sig, signode):
         # called from sphinx.directives.ObjectDescription.run()
         signode += addnodes.desc_name(sig, sig)
+        if self.objtype == 'genex':
+            m = CMakeXRefRole._re_genex.match(sig)
+            if m:
+                sig = m.group(1)
         return sig
 
     def add_target_and_index(self, name, sig, signode):
@@ -302,6 +313,8 @@ class CMakeXRefRole(XRefRole):
     # See sphinx.util.nodes.explicit_title_re; \x00 escapes '<'.
     _re = re.compile(r'^(.+?)(\s*)(?<!\x00)<(.*?)>$', re.DOTALL)
     _re_sub = re.compile(r'^([^()\s]+)\s*\(([^()]*)\)$', re.DOTALL)
+    _re_genex = re.compile(r'^\$<([^<>:]+)(:[^<>]+)?>$', re.DOTALL)
+    _re_guide = re.compile(r'^([^<>/]+)/([^<>]*)$', re.DOTALL)
 
     def __call__(self, typ, rawtext, text, *args, **keys):
         # Translate CMake command cross-references of the form:
@@ -312,6 +325,14 @@ class CMakeXRefRole(XRefRole):
             m = CMakeXRefRole._re_sub.match(text)
             if m:
                 text = '%s <%s>' % (text, m.group(1))
+        elif typ == 'cmake:genex':
+            m = CMakeXRefRole._re_genex.match(text)
+            if m:
+                text = '%s <%s>' % (text, m.group(1))
+        elif typ == 'cmake:guide':
+            m = CMakeXRefRole._re_guide.match(text)
+            if m:
+                text = '%s <%s>' % (m.group(2), text)
         # CMake cross-reference targets frequently contain '<' so escape
         # any explicit `<target>` with '<' not preceded by whitespace.
         while True:
@@ -355,6 +376,10 @@ class CMakeXRefTransform(Transform):
                 continue
 
             objname = ref['reftarget']
+            if objtype == 'guide' and CMakeXRefRole._re_guide.match(objname):
+                # Do not index cross-references to guide sections.
+                continue
+
             targetnum = env.new_serialno('index-%s:%s' % (objtype, objname))
 
             targetid = 'index-%s-%s:%s' % (targetnum, objtype, objname)
@@ -374,6 +399,7 @@ class CMakeDomain(Domain):
         'cpack_gen':  ObjType('cpack_gen',  'cpack_gen'),
         'envvar':     ObjType('envvar',     'envvar'),
         'generator':  ObjType('generator',  'generator'),
+        'genex':      ObjType('genex',      'genex'),
         'guide':      ObjType('guide',      'guide'),
         'variable':   ObjType('variable',   'variable'),
         'module':     ObjType('module',     'module'),
@@ -390,6 +416,7 @@ class CMakeDomain(Domain):
     directives = {
         'command':    CMakeObject,
         'envvar':     CMakeObject,
+        'genex':      CMakeObject,
         'variable':   CMakeObject,
         # Other object types cannot be created except by the CMakeTransform
         # 'generator':  CMakeObject,
@@ -409,6 +436,7 @@ class CMakeDomain(Domain):
         'cpack_gen':  CMakeXRefRole(),
         'envvar':     CMakeXRefRole(),
         'generator':  CMakeXRefRole(),
+        'genex':      CMakeXRefRole(),
         'guide':      CMakeXRefRole(),
         'variable':   CMakeXRefRole(),
         'module':     CMakeXRefRole(),
