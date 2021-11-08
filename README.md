@@ -76,6 +76,7 @@ document custom extensions provided by your CMake libraries.
 | `:envvar:`     | Refers to an environment variable                  |
 | `:cpack_gen:`  | Refers to CPack generators                         |
 | `:generator:`  | Refers to a build file generator                   |
+| `:genex:`      | Refers to a generator expression                   |
 | `:guide:`      | Used to refer to a "guide" page                    |
 | `:manual:`     | Used to refer to a "manual" page (like `cmake(1)`) |
 | `:policy:`     | Refers to CMake Policies                           |
