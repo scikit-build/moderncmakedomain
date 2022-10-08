@@ -1,12 +1,45 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.check-manifest]
-ignore = [
-    ".*",
-    "noxfile.py",
+[project]
+name = "sphinxcontrib-moderncmakedomain"
+description = "Sphinx Domain for Modern CMake"
+readme = "README.md"
+requires-python = ">=3.6"
+authors = [
+    { name = "Kitware" },
+]
+keywords = [
+    "cmake",
+    "documentation",
+    "kitware",
+    "sphinx",
+    "sphinxcontrib",
+]
+classifiers = [
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Documentation",
+    "Topic :: Utilities",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/scikit-build/moderncmakedomain"
+
+
+[tool.hatch.version]
+path = "sphinxcontrib/__init__.py"
 ]
