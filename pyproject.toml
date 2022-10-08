@@ -1,14 +1,11 @@
 [build-system]
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "sphinxcontrib-moderncmakedomain"
 description = "Sphinx Domain for Modern CMake"
 readme = "README.md"
-license = "BSD-3-Clause"
 requires-python = ">=3.6"
 authors = [
     { name = "Kitware" },
@@ -36,19 +33,12 @@ classifiers = [
     "Topic :: Documentation",
     "Topic :: Utilities",
 ]
-dynamic = [
-    "version",
-]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/scikit-build/moderncmakedomain"
 
+
 [tool.hatch.version]
 path = "sphinxcontrib/__init__.py"
-]
-
-[tool.check-manifest]
-ignore = [
-    ".*",
-    "noxfile.py",
 ]
