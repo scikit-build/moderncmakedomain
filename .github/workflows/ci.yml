@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
       - uses: hynek/build-and-inspect-python-package@v1
 
   test:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
       - uses: wntrblm/nox@2022.8.7
         with:
           python-versions: "3.6, 3.7, 3.8, 3.9, 3.10, 3.11-dev"
