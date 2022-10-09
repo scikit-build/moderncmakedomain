@@ -2,4 +2,4 @@ __import__('pkg_resources').declare_namespace(__name__)
 
 from .cmake import setup
 
-__version__ = "3.21.4"
+__version__ = "3.24.2"
