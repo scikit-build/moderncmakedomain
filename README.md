@@ -1,8 +1,8 @@
 # Sphinx Domain for Modern CMake
 
 This is taken directly from the Kitware git repository's Utilities directory.
-The original [sphinxcontrib-cmakedomain] has not been touched in quite some and
-as a result it wildly out of date. Documenting CMake domain entities in
+The original [sphinxcontrib-cmakedomain][] has not been touched in quite some and
+as a result it was wildly out of date. Documenting CMake domain entities in
 projects is painful otherwise. This works *exactly* in the same way as Kitware,
 so some time might be needed to study their approach to these problems.
 
@@ -10,7 +10,7 @@ This repository is under the same License as all of CMake, which is the
 BSD-3-Clause license.
 
 🚨🚨🚨
-Any issues you run into with this plugin must be reported to [Kitware]
+Any issues you run into with this plugin must be reported to [Kitware][]
 🚨🚨🚨
 
 # Installation
@@ -25,7 +25,7 @@ $ pip install sphinxcontrib-moderncmakedomain
 
 Alternatively, place it inside of your `setup.py`, `pyproject.toml`,
 `requirements.txt` or whatever system it is that you use to declare and manage
-your dependencies. A new version will only be released if there is a
+your dependencies. A new version will usually only be released if there is a
 change to this extension inside CMake.
 
 ## Git
@@ -46,7 +46,7 @@ To enable the use of the `moderncmakedomain`, add
 extensions = [..., 'sphinxcontrib.moderncmakedomain', ...]
 ```
 
-The plugin currently provides several directives and refrences. These are
+The plugin currently provides several directives and references. These are
 documented below.
 
 ## Directives
