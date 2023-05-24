@@ -5,7 +5,7 @@ from pathlib import Path
 
 nox.options.sessions = ["lint", "tests"]
 
-ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
 @nox.session
 def lint(session: nox.Session) -> None:
