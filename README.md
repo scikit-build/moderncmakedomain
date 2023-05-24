@@ -10,7 +10,9 @@ This repository is under the same License as all of CMake, which is the
 BSD-3-Clause license.
 
 🚨🚨🚨
-Any issues you run into with this plugin must be reported to [Kitware][]
+Any issues you run into with this plugin must be reported to [Kitware][],
+unless they involve the packaging itself. The Python files exactly match
+the CMake source for the released version numbers.
 🚨🚨🚨
 
 # Installation
