@@ -30,7 +30,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:
       name: pypi
-      url: https://pypi.org/p/moderncmakedomain
+      url: https://pypi.org/p/sphinxcontrib-moderncmakedomain
     permissions:
       id-token: write
 
