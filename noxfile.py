@@ -5,7 +5,7 @@ from pathlib import Path
 
 nox.options.sessions = ["lint", "tests"]
 
-ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
 @nox.session
 def lint(session: nox.Session) -> None:
@@ -60,5 +60,6 @@ def tests(session):
     """
     Run the unit and regular tests.
     """
-    session.install(".", "pytest")
+    # Setuptools is required due to sphinx installing sphinxcontrib extensions that use pkg_resources (fixed upstream but not released yet)
+    session.install(".", "pytest", "setuptools")
     session.run("pytest", *session.posargs)
