@@ -456,6 +456,20 @@ class CMakeDomain(Domain):
         for fullname in to_clear:
             del self.data['objects'][fullname]
 
+    def merge_domaindata(self, docnames, otherdata):
+        """Merge domaindata from the workers/chunks when they return.
+
+        Called once per parallelization chunk.
+        Only used when sphinx is run in parallel mode.
+
+        :param docnames: a Set of the docnames that are part of the current chunk to merge
+        :param otherdata: the partial data calculated by the current chunk
+        """
+
+        for fullname, (fn, objtype) in otherdata['objects'].items():
+            if fn in docnames:
+                self.data['objects'][fullname] = (fn, objtype)
+
     def resolve_xref(self, env, fromdocname, builder,
                      typ, target, node, contnode):
         targetid = '%s:%s' % (typ, target)
@@ -469,6 +483,7 @@ class CMakeDomain(Domain):
     def get_objects(self):
         for refname, (docname, type) in self.data['objects'].items():
             yield (refname, refname, type, docname, refname, 1)
+
 
 def setup(app):
     app.add_directive('cmake-module', CMakeModule)
