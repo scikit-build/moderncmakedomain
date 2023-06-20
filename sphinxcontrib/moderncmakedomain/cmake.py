@@ -358,9 +358,16 @@ class CMakeXRefTransform(Transform):
     def apply(self):
         env = self.document.settings.env
 
-        # Find CMake cross-reference nodes and add index and target
-        # nodes for them.
-        for ref in self.document.traverse(addnodes.pending_xref):
+        # Find CMake cross-reference nodes and add index and target nodes for
+        # them. Supporting docutils < 0.18 (which is missing findall) and
+        # docutils == 0.18.0 (which is missing traverse) We call list here
+        # since self.document changes grows the loop.
+        all_refs = (
+            list(self.document.findall(addnodes.pending_xref))
+            if hasattr(self.document, "findall")
+            else self.document.traverse(addnodes.pending_xref)
+        )
+        for ref in all_refs:
             if not ref['refdomain'] == 'cmake':
                 continue
 
