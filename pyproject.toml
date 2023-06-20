@@ -51,7 +51,7 @@ xfail_strict = true
 filterwarnings = [
     "error",
     "ignore::DeprecationWarning:sphinx.builders.gettext",
-    "default::PendingDeprecationWarning:docutils.nodes",
+    "always::PendingDeprecationWarning:docutils.nodes",
 ]
 log_cli_level = "info"
 testpaths = ["tests"]
