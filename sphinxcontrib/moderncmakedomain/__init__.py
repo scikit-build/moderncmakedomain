@@ -1,3 +1,3 @@
 from .cmake import setup
 
-__version__ = "3.26.4"
+__version__ = "3.27.0-rc3"
