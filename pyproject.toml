@@ -35,7 +35,7 @@ classifiers = [
     "Topic :: Documentation",
     "Topic :: Utilities",
 ]
-dependencies = ["sphinx"]
+dependencies = ["sphinx>=2"]
 dynamic = ["version"]
 
 [project.urls]
@@ -51,7 +51,6 @@ xfail_strict = true
 filterwarnings = [
     "error",
     "ignore::DeprecationWarning:sphinx.builders.gettext",
-    'always:nodes\.Node\.traverse\(\) is obsoleted by Node\.findall\(\):PendingDeprecationWarning',
 ]
 log_cli_level = "info"
 testpaths = ["tests"]

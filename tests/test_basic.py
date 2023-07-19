@@ -1,6 +1,6 @@
 import pytest
 
-@pytest.mark.parametrize("parallel", [0, 1])
+@pytest.mark.parametrize("parallel", [0, 1, 2])
 @pytest.mark.sphinx(
     "html",
     freshenv=True,
