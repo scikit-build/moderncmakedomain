@@ -22,6 +22,3 @@ def test_simple_html(app, status, warning, parallel):
     print(local)
     assert 'href="#variable:MYVAR"' in local
     assert 'id="variable:MYVAR"' in local
-
-
-
