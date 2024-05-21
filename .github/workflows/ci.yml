@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_COLOR: 3
 
@@ -17,7 +21,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: hynek/build-and-inspect-python-package@v1
+      - uses: hynek/build-and-inspect-python-package@v2
 
   test:
     name: Run quick tests
@@ -25,7 +29,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: wntrblm/nox@2023.04.22
+
+      - name: Setup uv
+        uses: yezz123/setup-uv@v4
+
+      - uses: wntrblm/nox@2024.04.15
         with:
-          python-versions: "3.7, 3.8, 3.9, 3.10, 3.11, 3.12-dev"
+          python-versions: "3.7, 3.8, 3.9, 3.10, 3.11, 3.12"
+
       - run: nox -s tests
