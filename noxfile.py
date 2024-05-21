@@ -7,7 +7,7 @@ nox.needs_version = ">=2024.3.2"
 nox.options.sessions = ["lint", "tests"]
 nox.options.default_venv_backend = "uv|virtualenv"
 
-ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+ALL_PYTHONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 @nox.session
 def lint(session: nox.Session) -> None:
