@@ -62,6 +62,5 @@ def tests(session):
     """
     Run the unit and regular tests.
     """
-    # Setuptools is required due to sphinx installing sphinxcontrib extensions that use pkg_resources (fixed upstream but not released yet)
-    session.install(".", "pytest", "setuptools")
+    session.install(".[test]", silent=False)
     session.run("pytest", *session.posargs)

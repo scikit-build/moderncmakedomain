@@ -42,7 +42,11 @@ dynamic = ["version"]
 Homepage = "https://github.com/scikit-build/moderncmakedomain"
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = [
+    # Setuptools is required due to sphinx installing sphinxcontrib extensions that use pkg_resources (fixed upstream but not released yet)
+    "pytest",
+    "defusedxml",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
