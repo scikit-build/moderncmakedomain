@@ -19,3 +19,29 @@ repos:
         exclude: "^tests/roots"
       - id: requirements-txt-fixer
       - id: trailing-whitespace
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "2.0.4"
+    hooks:
+      - id: pyproject-fmt
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes"]
+        exclude: "$sphinxcontrib/moderncmakedomain/(cmake|colors).py$"
+      - id: ruff-format
+        exclude: "$sphinxcontrib/moderncmakedomain/(cmake|colors).py$"
+
+  - repo: https://github.com/henryiii/validate-pyproject-schema-store
+    rev: 2024.05.13
+    hooks:
+      - id: validate-pyproject
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.4
+    hooks:
+      - id: check-dependabot
+      - id: check-github-workflows
+      - id: check-readthedocs

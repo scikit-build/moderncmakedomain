@@ -1,11 +1,13 @@
-import nox
-import urllib.request
 import re
+import urllib.request
 from pathlib import Path
+
+import nox
 
 nox.needs_version = ">=2024.3.2"
 nox.options.sessions = ["lint", "tests"]
 nox.options.default_venv_backend = "uv|virtualenv"
+
 
 @nox.session
 def lint(session: nox.Session) -> None:
