@@ -7,8 +7,6 @@ nox.needs_version = ">=2024.3.2"
 nox.options.sessions = ["lint", "tests"]
 nox.options.default_venv_backend = "uv|virtualenv"
 
-ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
-
 @nox.session
 def lint(session: nox.Session) -> None:
     """
@@ -57,7 +55,7 @@ def update(session: nox.Session) -> None:
     init_file.write_text(txt_new, encoding="utf_8")
 
 
-@nox.session(python=ALL_PYTHONS)
+@nox.session
 def tests(session):
     """
     Run the unit and regular tests.
