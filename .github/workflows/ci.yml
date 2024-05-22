@@ -35,6 +35,25 @@ jobs:
 
       - uses: wntrblm/nox@2024.04.15
         with:
-          python-versions: "3.7, 3.8, 3.9, 3.10, 3.11, 3.12"
+          python-versions: "3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13"
 
-      - run: nox -s tests
+      - name: Test Python 3.7
+        run: nox -s tests -P 3.7
+
+      - name: Test Python 3.8
+        run: nox -s tests -P 3.8
+
+      - name: Test Python 3.9
+        run: nox -s tests -P 3.9
+
+      - name: Test Python 3.10
+        run: nox -s tests -P 3.10
+
+      - name: Test Python 3.11
+        run: nox -s tests -P 3.11
+
+      - name: Test Python 3.12
+        run: nox -s tests -P 3.13
+
+      - name: Test Python 3.13
+        run: nox -s tests -P 3.13
