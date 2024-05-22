@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.parametrize("parallel", [0, 1, 2])
 @pytest.mark.sphinx(
     "html",
@@ -19,6 +20,9 @@ def test_simple_html(app, status, warning, parallel):
     with open(str(external_pth), encoding="utf-8") as f:
         external = f.read()
 
-    print(local)
     assert 'href="#variable:MYVAR"' in local
     assert 'id="variable:MYVAR"' in local
+
+    assert 'id="index-0-command:find_program"' in external
+    assert "find_program()" in external
+    assert 'class="xref cmake cmake-command docutils literal notranslate"' in external

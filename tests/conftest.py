@@ -1,6 +1,6 @@
-import pytest
-
 import sys
+
+import pytest
 
 if sys.version_info < (3, 8):
     from importlib_metadata import version
@@ -9,7 +9,7 @@ else:
 
 sphinx_vesion = tuple(int(d) for d in version("sphinx").split(".")[:2])
 
-pytest_plugins = 'sphinx.testing.fixtures'
+pytest_plugins = "sphinx.testing.fixtures"
 
 if sphinx_vesion < (7, 3):
     from sphinx.testing.path import path
