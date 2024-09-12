@@ -21,7 +21,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.5
+    rev: v0.6.4
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -30,12 +30,12 @@ repos:
         exclude: "$sphinxcontrib/moderncmakedomain/(cmake|colors).py$"
 
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2024.05.24
+    rev: 2024.08.26
     hooks:
       - id: validate-pyproject
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.4
+    rev: 0.29.2
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
