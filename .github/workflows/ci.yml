@@ -33,7 +33,7 @@ jobs:
       - name: Setup uv
         uses: yezz123/setup-uv@v4
 
-      - uses: wntrblm/nox@2024.04.15
+      - uses: wntrblm/nox@2024.10.09
         with:
           python-versions: "3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13"
 
