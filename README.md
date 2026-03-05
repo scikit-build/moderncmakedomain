@@ -53,12 +53,12 @@ documented below.
 
 ## Directives
 
-|     directive      |                      description                    |
-|:------------------:|:----------------------------------------------------|
-| `cmake:variable::` | For a basic variable                                |
-| `cmake:command::`  | For a function                                      |
-| `cmake-module::`   | Autodoc style extractor (takes a relative filepath) |
-| `cmake:envvar::`   | For environment variables                           |
+|       directive       |                      description                    |
+|:----------------------|:----------------------------------------------------|
+| `.. cmake:variable::` | For a basic variable                                |
+| `.. cmake:command::`  | For a function                                      |
+| `.. cmake-module::`   | Autodoc style extractor (takes a relative filepath) for markup as described in https://cmake.org/cmake/help/latest/manual/cmake-developer.7.html#a-sample-find-module |
+| `.. cmake:envvar::`   | For environment variables                           |
 
 To declare any of the references found below, they must be placed into a
 directory with the same name under the sphinx SOURCEDIR/master doc. Thus,
