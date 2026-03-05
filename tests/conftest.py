@@ -1,11 +1,6 @@
-import sys
+from importlib.metadata import version
 
 import pytest
-
-if sys.version_info < (3, 8):
-    from importlib_metadata import version
-else:
-    from importlib.metadata import version
 
 sphinx_vesion = tuple(int(d) for d in version("sphinx").split(".")[:2])
 
