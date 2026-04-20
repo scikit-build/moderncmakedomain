@@ -14,17 +14,17 @@ import sphinx
 if sphinx.version_info >= (2,):
     from docutils import io, nodes
     from docutils.nodes import Element, Node, TextElement, system_message
-    from docutils.parsers.rst import Directive, directives
+    from docutils.parsers.rst import directives
     from docutils.transforms import Transform
     from docutils.utils.code_analyzer import Lexer, LexerError
 
     from sphinx import addnodes
-    from sphinx.directives import ObjectDescription, nl_escape_re
+    from sphinx.directives import SphinxDirective, ObjectDescription, nl_escape_re
     from sphinx.domains import Domain, ObjType
     from sphinx.roles import XRefRole
     from sphinx.util import logging, ws_re
     from sphinx.util.docutils import ReferenceRole
-    from sphinx.util.nodes import make_refnode
+    from sphinx.util.nodes import make_refnode, nested_parse_with_titles
 else:
     # Sphinx 2.x is required.
     assert sphinx.version_info >= (2,)
@@ -128,15 +128,16 @@ class ObjectEntry:
     name: str
 
 
-class CMakeModule(Directive):
+class CMakeModule(SphinxDirective):
     required_arguments = 1
     optional_arguments = 0
     final_argument_whitespace = True
     option_spec = {'encoding': directives.encoding}
 
     def __init__(self, *args, **keys):
-        self.re_start = re.compile(r'^#\[(?P<eq>=*)\[\.rst:$')
-        Directive.__init__(self, *args, **keys)
+        self.re_block_start = re.compile(r'^(?P<prefix>\s*)#\[(?P<eq>=*)\[\.(?:rst|md):$')
+        self.re_single = re.compile(r'^(?P<prefix>\s*)#\.(?:rst|md):$')
+        super().__init__(*args, **keys)
 
     def run(self):
         settings = self.state.document.settings
@@ -161,41 +162,61 @@ class CMakeModule(Directive):
             raise self.severe(msg)
         raw_lines = f.read().splitlines()
         f.close()
-        rst = None
         lines = []
-        for line in raw_lines:
-            if rst is not None and rst != '#':
-                # Bracket mode: check for end bracket
-                pos = line.find(rst)
-                if pos >= 0:
-                    if line[0] == '#':
-                        line = ''
-                    else:
-                        line = line[0:pos]
-                    rst = None
-            else:
-                # Line mode: check for .rst start (bracket or line)
-                m = self.re_start.match(line)
-                if m:
-                    rst = f']{m.group("eq")}]'
-                    line = ''
-                elif line == '#.rst:':
-                    rst = '#'
-                    line = ''
-                elif rst == '#':
-                    if line == '#' or line[:2] == '# ':
-                        line = line[2:]
-                    else:
-                        rst = None
-                        line = ''
-                elif rst is None:
-                    line = ''
-            lines.append(line)
-        if rst is not None and rst != '#':
-            raise self.warning(f'{self.name!r} found unclosed bracket '
-                               f'"#[{rst[1:-1]}[.rst:" in {path!r}')
-        self.state_machine.insert_input(lines, path)
-        return []
+        block_end = ""
+        prefix = ""
+        block_start = -1
+        # TODO: Parse nested comments as belonging to specific directive
+        #  Similar to python's documentaiton
+        for indx, line in enumerate(raw_lines):
+            # Check if in block comment mode
+            if block_end:
+                # Check for block_end
+                if line.startswith(block_end):
+                    # Exit block mode
+                    block_end = ""
+                    prefix = ""
+                    continue
+                # Check if line is only whitespace, then add an empty line
+                if not line or line.isspace():
+                    lines.append("")
+                    continue
+                # Otherwise remove prefix and add the lines
+                if not line.startswith(prefix):
+                    raise self.warning(f"{self.name} found ill-formatted block line in {path}:\nline#{indx}: {line}")
+                lines.append(line.lstrip(prefix))
+                continue
+            # Check if in line comment mode
+            if prefix:
+                if line.startswith(prefix):
+                    # Current line is still part of the comment
+                    lines.append(line.lstrip(prefix))
+                    continue
+                # Otherwise we are exiting line-mode
+                prefix = ""
+                continue
+            # Otherwise we are not in comment mode
+            # Check if we can enter a comment mode
+            # First check for block-mode
+            block_mode = self.re_block_start.match(line)
+            if block_mode:
+                block_start = indx
+                prefix = block_mode.group('prefix')
+                block_end = f"{prefix}]{block_mode.group('eq')}]"
+                continue
+            # Next check for line-mode
+            line_mode = self.re_single.match(line)
+            if line_mode:
+                prefix = line_mode.group('prefix')
+                continue
+        # Sanitize exit
+        if block_end:
+            raise self.warning(f"{self.name} found unclosed bracket in {path}:\n"
+                               f"bracket start at:{block_start};bracket end:\"{block_end}\"")
+        node = nodes.Element()
+        node.document = self.state.document
+        self.state.nested_parse(lines, self.content_offset, node, match_titles=True)
+        return node.children
 
 
 class _cmake_index_entry:
