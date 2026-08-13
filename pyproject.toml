@@ -56,6 +56,10 @@ version.path = "sphinxcontrib/moderncmakedomain/__init__.py"
 build.targets.wheel.packages = ["sphinxcontrib"]
 
 
+[tool.uv]
+exclude-newer = "7 days"
+
+
 [tool.ruff]
 exclude = [
   "sphinxcontrib/moderncmakedomain/cmake.py",

@@ -1,10 +1,11 @@
 ci:
+  autoupdate_schedule: monthly
   autoupdate_commit_msg: "chore: update pre-commit hooks"
   autofix_commit_msg: "style: pre-commit fixes"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v6.0.0"
+    rev: "3e8a8703264a2f4a69428a0aa4dcb512790b2c8c"  # frozen: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -21,7 +22,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.9
+    rev: 39d9ac5938dadb73df0564a45f163e25ff9fa6e2  # frozen: v0.16.1
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -30,13 +31,20 @@ repos:
         exclude: "$sphinxcontrib/moderncmakedomain/(cmake|colors).py$"
 
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2026.04.03
+    rev: a12c4f2e45f39cfb516be7842efbe98633eb3789  # frozen: 2026.08.05
     hooks:
       - id: validate-pyproject
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.1
+    rev: 6b63472e72e1a91ed8a2f6d483790dfb644fa1d3  # frozen: 0.37.4
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
       - id: check-readthedocs
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 451b56af716f9f0d0c2b816503a3fd0cf8b036fa  # frozen: v1.29.0
+    hooks:
+      - id: zizmor
+        files: "^\\.github"
+        args: [--persona=pedantic]
