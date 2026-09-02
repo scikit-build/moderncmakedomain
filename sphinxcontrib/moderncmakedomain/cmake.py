@@ -1,5 +1,5 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
-# file Copyright.txt or https://cmake.org/licensing for details.
+# file LICENSE.rst or https://cmake.org/licensing for details.
 
 # BEGIN imports
 
@@ -13,6 +13,7 @@ import sphinx
 # The following imports may fail if we don't have Sphinx 2.x or later.
 if sphinx.version_info >= (2,):
     from docutils import io, nodes
+    from docutils.statemachine import ViewList
     from docutils.nodes import Element, Node, TextElement, system_message
     from docutils.parsers.rst import Directive, directives
     from docutils.transforms import Transform
@@ -21,6 +22,9 @@ if sphinx.version_info >= (2,):
     from sphinx import addnodes
     from sphinx.directives import ObjectDescription, nl_escape_re
     from sphinx.domains import Domain, ObjType
+    from sphinx.domains.changeset import VersionChange
+    from sphinx.domains.changeset import versionlabels, versionlabel_classes
+    from sphinx.domains.std import OptionXRefRole
     from sphinx.roles import XRefRole
     from sphinx.util import logging, ws_re
     from sphinx.util.docutils import ReferenceRole
@@ -30,6 +34,21 @@ else:
     assert sphinx.version_info >= (2,)
 
 # END imports
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# BEGIN sphinx tweaks
+
+# Adjust the 'std' domain regex used to parse options so that it recognizes
+# e.g. `-W<name>` as the option `-W` with a value `<name>`, rather than
+# treating the entire string as the option name.
+#
+# See also https://github.com/sphinx-doc/sphinx/issues/14323.
+
+sphinx.domains.std.option_desc_re = (
+    re.compile(r'((?:/|--|-|\+)?[^\s=<]+)(=?\s*.*)'))
+
+# END sphinx tweaks
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -62,6 +81,9 @@ from pygments.token import (Comment, Name, Number, Operator, Punctuation,
 #   be present.
 
 CMakeLexer.tokens["root"] = [
+  # [[string]]
+  (r'\[\[(?:\W[\w\W]*?)?\]\]', String.Multiline),
+  (r'\[(?P<level>=+)\[[\w\W]*?\](?P=level)\]', String.Multiline),
   # fctn(
   (r'\b(\w+)([ \t]*)(\()',
    bygroups(Name.Function, Text, Name.Function), '#push'),
@@ -101,8 +123,12 @@ CMakeLexer.tokens["root"] = [
   (r'(?s)"(\\"|[^"])*"', String),
   (r'\.\.\.', Name.Variable),
   # <..|..> is different from <expr>
-  (r'<', Operator, '#push'),
-  (r'>', Operator, '#pop'),
+  # TODO: <..|..> should be {..|..}; remove when all instances are converted?
+  (r'<', Punctuation, '#push'),
+  (r'>', Punctuation, '#pop'),
+  # {..|..}
+  (r'\{', Punctuation, '#push'),
+  (r'\}', Punctuation, '#pop'),
   (r'\n', Whitespace),
   (r'[ \t]+', Whitespace),
   (r'#.*\n', Comment),
@@ -118,6 +144,12 @@ logger = logging.getLogger(__name__)
 
 # RE to split multiple command signatures.
 sig_end_re = re.compile(r'(?<=[)])\n')
+
+
+def _parse_rst(state, text: str) -> list[Node]:
+    node = nodes.Element()
+    state.nested_parse(ViewList([text], source=''), 0, node)
+    return node.children
 
 
 @dataclass
@@ -209,6 +241,7 @@ class _cmake_index_entry:
 _cmake_index_objs = {
     'command':    _cmake_index_entry('command'),
     'cpack_gen':  _cmake_index_entry('cpack generator'),
+    'diagnostic': _cmake_index_entry('diagnostic'),
     'envvar':     _cmake_index_entry('envvar'),
     'generator':  _cmake_index_entry('generator'),
     'genex':      _cmake_index_entry('genex'),
@@ -218,6 +251,7 @@ _cmake_index_objs = {
     'policy':     _cmake_index_entry('policy'),
     'prop_cache': _cmake_index_entry('cache property'),
     'prop_dir':   _cmake_index_entry('directory property'),
+    'prop_fs':    _cmake_index_entry('file set property'),
     'prop_gbl':   _cmake_index_entry('global property'),
     'prop_inst':  _cmake_index_entry('installed file property'),
     'prop_sf':    _cmake_index_entry('source file property'),
@@ -453,6 +487,8 @@ class CMakeSignatureObject(CMakeObject):
             sigargs = self.targetnames[sig]
         else:
             def extract_keywords(params):
+                if params[-1].endswith(')'):
+                    params[-1] = params[-1][:-1]
                 for p in params:
                     if p[0].isalpha():
                         yield p
@@ -493,6 +529,80 @@ class CMakeSignatureObject(CMakeObject):
             self.options.get('break', CMakeSignatureObject.BREAK_SMART))
 
         return super().run()
+
+
+class CMakeDiagnosticObject(CMakeObject):
+    object_type = 'diagnostic'
+    required_arguments = 0
+    optional_arguments = 0
+
+    DEFAULT_CHOICES = {'ignore', 'warn', 'error'}
+
+    def default_option(argument):
+        return directives.choice(
+            argument, CMakeDiagnosticObject.DEFAULT_CHOICES)
+
+    option_spec = {
+        'default': default_option,
+        'parent': directives.unchanged,
+    }
+
+    def __init__(self, *args, **kwargs):
+        self.targetname = None
+        super().__init__(*args, **kwargs)
+
+    def _preset_name(self) -> str:
+        sep = False
+        out = ''
+        for c in self.targetname[4:]:
+            if c == '_':
+                sep = True
+            elif sep:
+                out += c
+                sep = False
+            else:
+                out += c.lower()
+        return out
+
+    def _build_field(self, name: str, content: str | list[Node]) -> Node:
+        if type(content) is not list:
+            content = _parse_rst(self.state,content)
+
+        name_node = nodes.field_name(text=name)
+        body_node = nodes.field_body('', *content)
+        return nodes.field('', name_node, body_node)
+
+    def _build_cli(self) -> list[Node]:
+        cname = self.targetname[4:].lower().replace('_', '-')
+        ctext = f'-W[no-][error=]{cname}'
+        return _parse_rst(self.state,f':option:`{ctext} <cmake -W>`')
+
+    def _build_preset_refs(self) -> list[Node]:
+        p = self._preset_name()
+        w = f':preset:`warnings.{p} <configurePresets.warnings.{p}>`'
+        e = f':preset:`errors.{p} <configurePresets.errors.{p}>`'
+        return _parse_rst(self.state,f'{w}, {e}')
+
+    def run(self) -> list[Node]:
+        self.domain, self.objtype = self.name.split(':', 1)
+        doc = self.state.document
+        self.targetname = doc.next_node(nodes.title).astext()
+
+        default = self.options['default'].capitalize()
+        parent = self.options.get('parent')
+
+        headers = nodes.field_list()
+        headers += self._build_field('Command Line', self._build_cli())
+        headers += self._build_field('Presets', self._build_preset_refs())
+        headers += self._build_field('Default', default)
+
+        if parent:
+            parentRef = _parse_rst(self.state,f':diagnostic:`{parent}`')
+            headers += self._build_field('Parent', parentRef)
+
+        node = nodes.Element()
+        self.state.nested_parse(self.content, self.content_offset, node)
+        return [headers] + node.children
 
 
 class CMakeReferenceRole:
@@ -542,6 +652,7 @@ class CMakeXRefRole(CMakeReferenceRole[XRefRole]):
     _re_sub = re.compile(r'^([^()\s]+)\s*\(([^()]*)\)$', re.DOTALL)
     _re_genex = re.compile(r'^\$<([^<>:]+)(:[^<>]+)?>$', re.DOTALL)
     _re_guide = re.compile(r'^([^<>/]+)/([^<>]*)$', re.DOTALL)
+    _re_explicit = re.compile(r'^([^<>]+)\s+<([^<>]+)>$', re.DOTALL)
 
     def __call__(self, typ, rawtext, text, *args, **kwargs):
         if typ == 'cmake:command':
@@ -561,6 +672,13 @@ class CMakeXRefRole(CMakeReferenceRole[XRefRole]):
             m = CMakeXRefRole._re_guide.match(text)
             if m:
                 text = f'{m.group(2)} <{text}>'
+        elif typ == 'cmake:preset':
+            m = CMakeXRefRole._re_explicit.match(text)
+            if m:
+                rawtext = f'{m.group(1)} <CMakePresets.{m.group(2)}>'
+                text = f'{m.group(1)} <CMakePresets.{m.group(2)}>'
+            else:
+                text = f'CMakePresets.{text}'
         return super().__call__(typ, rawtext, text, *args, **kwargs)
 
     # We cannot insert index nodes using the result_nodes method
@@ -573,6 +691,16 @@ class CMakeXRefRole(CMakeReferenceRole[XRefRole]):
     #
     # def result_nodes(self, document, env, node, is_ref):
     #     pass
+
+
+class CMakeOptionXRefRole(OptionXRefRole):
+    def __init__(self, command: str) -> None:
+        self.command = command
+        super().__init__()
+
+    def __call__(self, typ, rawtext, text, *args, **kwargs):
+        content = f'{text} <{self.command} {re.split(r"[ =]", text)[0]}>'
+        return super().__call__('std:option', text, content, *args, **kwargs)
 
 
 class CMakeXRefTransform(Transform):
@@ -634,6 +762,7 @@ class CMakeDomain(Domain):
     object_types = {
         'command':    ObjType('command',    'command'),
         'cpack_gen':  ObjType('cpack_gen',  'cpack_gen'),
+        'diagnostic': ObjType('diagnostic', 'diagnostic'),
         'envvar':     ObjType('envvar',     'envvar'),
         'generator':  ObjType('generator',  'generator'),
         'genex':      ObjType('genex',      'genex'),
@@ -643,6 +772,7 @@ class CMakeDomain(Domain):
         'policy':     ObjType('policy',     'policy'),
         'prop_cache': ObjType('prop_cache', 'prop_cache'),
         'prop_dir':   ObjType('prop_dir',   'prop_dir'),
+        'prop_fs':    ObjType('prop_fs',    'prop_fs'),
         'prop_gbl':   ObjType('prop_gbl',   'prop_gbl'),
         'prop_inst':  ObjType('prop_inst',  'prop_inst'),
         'prop_sf':    ObjType('prop_sf',    'prop_sf'),
@@ -653,15 +783,18 @@ class CMakeDomain(Domain):
     directives = {
         'command':    CMakeObject,
         'envvar':     CMakeObject,
+        'diagnostic': CMakeDiagnosticObject,
         'genex':      CMakeGenexObject,
         'signature':  CMakeSignatureObject,
         'variable':   CMakeObject,
         # Other `object_types` cannot be created except by the `CMakeTransform`
     }
     roles = {
+        # General CMake reference roles.
         'cref':       CMakeCRefRole(),
         'command':    CMakeXRefRole(fix_parens=True, lowercase=True),
         'cpack_gen':  CMakeXRefRole(),
+        'diagnostic': CMakeXRefRole(),
         'envvar':     CMakeXRefRole(),
         'generator':  CMakeXRefRole(),
         'genex':      CMakeXRefRole(),
@@ -671,12 +804,23 @@ class CMakeDomain(Domain):
         'policy':     CMakeXRefRole(),
         'prop_cache': CMakeXRefRole(),
         'prop_dir':   CMakeXRefRole(),
+        'prop_fs':    CMakeXRefRole(),
         'prop_gbl':   CMakeXRefRole(),
         'prop_inst':  CMakeXRefRole(),
         'prop_sf':    CMakeXRefRole(),
         'prop_test':  CMakeXRefRole(),
         'prop_tgt':   CMakeXRefRole(),
         'manual':     CMakeXRefRole(),
+        'preset':     CMakeXRefRole(lowercase=True, warn_dangling=True),
+        # Roles for program-specific command-line options without the program
+        # name (which add the name to form the ref).
+        'cmake-option':           CMakeOptionXRefRole('cmake'),
+        'cmake-build-option':     CMakeOptionXRefRole('cmake--build'),
+        'cmake-install-option':   CMakeOptionXRefRole('cmake--install'),
+        'cmake-workflow-option':  CMakeOptionXRefRole('cmake--workflow'),
+        'cpack-option':           CMakeOptionXRefRole('cpack'),
+        'ctest-dashboard-option': CMakeOptionXRefRole('ctest-dashboard'),
+        'ctest-option':           CMakeOptionXRefRole('ctest'),
     }
     initial_data = {
         'objects': {},  # fullname -> ObjectEntry
@@ -709,13 +853,28 @@ class CMakeDomain(Domain):
         targetid = f'{typ}:{target}'
         obj = self.data['objects'].get(targetid)
 
-        if obj is None and typ == 'command':
-            # If 'command(args)' wasn't found, try just 'command'.
-            # TODO: remove this fallback? warn?
-            # logger.warning(f'no match for {targetid}')
-            command = target.split('(')[0]
-            targetid = f'{typ}:{command}'
-            obj = self.data['objects'].get(targetid)
+        if obj is None:
+            if typ == 'command':
+                # If 'command(args)' wasn't found, try just 'command'.
+                # TODO: remove this fallback? warn?
+                # logger.warning(f'no match for {targetid}')
+                command = target.split('(')[0]
+                targetid = f'{typ}:{command}'
+                obj = self.data['objects'].get(targetid)
+            elif typ == 'preset':
+                # Preset references are really just references to plain old
+                # explicit targets.
+                labels = env.get_domain('std').labels
+                docname, labelid, sectname = labels.get(target, ('', '', ''))
+
+                if not docname:
+                    return None
+
+                if node['refexplicit']:
+                    sectname = node.astext()
+
+                return make_refnode(builder, fromdocname, docname, labelid,
+                                    nodes.literal('', sectname), target)
 
         if obj is None:
             # TODO: warn somehow?
@@ -745,4 +904,26 @@ def setup(app):
     app.add_transform(CMakeTransform)
     app.add_transform(CMakeXRefTransform)
     app.add_domain(CMakeDomain)
+
+    version_directives = {
+        'cmakefiles': 'cmakeFiles',
+        'codemodel': 'codemodel',
+        'presets': 'presets',
+        'toolchains': 'toolchains',
+    }
+    for directive, name in version_directives.items():
+        versionlabels.update({
+            f'{directive}-versionadded':   f'Added in {name} version %s',
+            f'{directive}-versionchanged': f'Changed in {name} version %s',
+            f'{directive}-versionremoved': f'Removed in {name} version %s',
+        })
+        versionlabel_classes.update({
+            f'{directive}-versionadded':   'added',
+            f'{directive}-versionchanged': 'changed',
+            f'{directive}-versionremoved': 'removed',
+        })
+        app.add_directive(f'{directive}-versionadded', VersionChange)
+        app.add_directive(f'{directive}-versionchanged', VersionChange)
+        app.add_directive(f'{directive}-versionremoved', VersionChange)
+
     return {"parallel_read_safe": True}

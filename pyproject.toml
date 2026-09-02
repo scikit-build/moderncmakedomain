@@ -13,6 +13,7 @@ keywords = [
   "sphinx",
   "sphinxcontrib",
 ]
+license-files = ["LICENSE.rst"]
 authors = [
   { name = "Kitware" },
 ]
