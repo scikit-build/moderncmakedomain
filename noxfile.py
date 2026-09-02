@@ -4,9 +4,11 @@ from pathlib import Path
 
 import nox
 
-nox.needs_version = ">=2024.3.2"
+nox.needs_version = ">=2026.8.10"
 nox.options.sessions = ["lint", "tests"]
 nox.options.default_venv_backend = "uv|virtualenv"
+
+PYTHONS = ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
 
 @nox.session
@@ -20,7 +22,7 @@ def lint(session: nox.Session) -> None:
     )
 
 
-@nox.session
+@nox.session(allow_parallel=True)
 def build(session: nox.Session) -> None:
     """
     Build an SDist and wheel.
@@ -71,8 +73,8 @@ def update(session: nox.Session) -> None:
     init_file.write_text(txt_new, encoding="utf_8")
 
 
-@nox.session
-def tests(session):
+@nox.session(python=PYTHONS, allow_parallel=True)
+def tests(session: nox.Session) -> None:
     """
     Run the unit and regular tests.
     """
