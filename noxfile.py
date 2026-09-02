@@ -8,7 +8,8 @@ nox.needs_version = ">=2026.8.10"
 nox.options.sessions = ["lint", "tests"]
 nox.options.default_venv_backend = "uv|virtualenv"
 
-PYTHONS = ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
+PYPROJECT = nox.project.load_toml("pyproject.toml")
+PYTHONS = nox.project.python_versions(PYPROJECT, max_version="3.15")
 
 
 @nox.session
