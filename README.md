@@ -45,7 +45,7 @@ To enable the use of the `moderncmakedomain`, add
 `conf.py` file:
 
 ```python
-extensions = [..., 'sphinxcontrib.moderncmakedomain', ...]
+extensions = [..., "sphinxcontrib.moderncmakedomain", ...]
 ```
 
 The plugin currently provides several directives and references. These are
